@@ -1,8 +1,8 @@
-import smtplib
-import itertools
-import os
-from time import sleep
-from threading import *
+####import smtplib
+####import itertools
+###import os
+####from time import sleep
+####from threading import *
 #####from colorama import init
 init()
 
