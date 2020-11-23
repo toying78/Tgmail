@@ -3,7 +3,7 @@ import itertools
 import os
 from time import sleep
 from threading import *
-from colorama import init
+#####from colorama import init
 init()
 
 print("         _                           ______                                 ")
