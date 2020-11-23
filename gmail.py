@@ -73,7 +73,7 @@ def trial_with_ssl(mail_user, mail_pass):
         for line in f:
             count_err += line.count("Username")
         
-    with open('passwfile') as f:
+    with open('pass.txt') as f:
         for line in f:
             count_pss += line.count(" ")
     
